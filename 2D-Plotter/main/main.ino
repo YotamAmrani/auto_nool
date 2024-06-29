@@ -85,19 +85,20 @@ void print_current_position()
 
 
 void update_next(int* current_element_index, int* x_direction, int* y_direction){
-  if ((*current_element_index == ELEMENTS_COUNT && *x_direction > 0 )|| (*current_element_index == 0 && *x_direction < 0)){
-    *x_direction = (*x_direction)*(-1);
-    state.sys_mode = IDLE;
-    Serial.println("Enter IDLE mode");
-  }
-  // else{
-    *current_element_index += *x_direction;
+  // if ((*current_element_index == ELEMENTS_COUNT && *x_direction > 0 )|| (*current_element_index == 0 && *x_direction < 0)){
+  //   *x_direction = (*x_direction)*(-1);
+  //   state.sys_mode = IDLE;
+  //   Serial.println("Enter IDLE mode");
   // }
+  // *current_element_index += *x_direction;
+  state.sys_mode = IDLE;
+  Serial.println("Enter IDLE mode");
+  *x_direction = *x_direction*(-1);
   
-  Serial.print("next index:");
-  Serial.println(*current_element_index);
-  Serial.print("next x direction:");
-  Serial.println(*x_direction);
+  // Serial.print("next index:");
+  // Serial.println(*current_element_index);
+  // Serial.print("next x direction:");
+  // Serial.println(*x_direction);
 }
 
 void move_to_next(StepperController *stepper_c, int current_element_index, int x_direction){
@@ -179,20 +180,23 @@ void loop()
   switch (state.sys_mode)
   {
   case PRINT:
-      delay(PENDING_TIME_BETWEEN_ELEMENTS);
-      Serial.println("-------------------------");
+
       print_current_position();
       if (x_direction > 0){
-        move_to_next(&stepper_c,current_element_index, x_direction);
-        print_current_position();
-        move_element(&stepper_c, y_direction);
-        print_current_position();
+        for (int i=0; i< ELEMENTS_COUNT; i++){
+          delay(PENDING_TIME_BETWEEN_ELEMENTS);
+          Serial.println("-------------------------");
+          move_to_next(&stepper_c,i, x_direction);
+          move_element(&stepper_c, y_direction);
+        }
       }
       else{
-        move_element(&stepper_c, y_direction);
-        print_current_position();
-        move_to_next(&stepper_c,current_element_index, x_direction);
-        print_current_position();
+        for (int i=ELEMENTS_COUNT-1; i<= 0; i--){
+          delay(PENDING_TIME_BETWEEN_ELEMENTS);
+          Serial.println("-------------------------");
+          move_element(&stepper_c, y_direction);
+          move_to_next(&stepper_c,current_element_index, x_direction);
+        }
       }
       update_next(&current_element_index, &x_direction, &y_direction);
       break;
