@@ -104,57 +104,41 @@ void update_next(int* current_element_index, int* x_direction, int* y_direction)
 }
 
 
-void move_next_element(StepperController *stepper_c, int current_element_index, int x_direction, int y_direction){
-  Serial.print("Print element:");
-  Serial.println(current_element_index);
-  
-  // assuming element is at the Y center coordinate, x on the next element
-  stepper_c->set_enable(true);
-
-  // Move Y to desired direction 
-  if(y_direction > 0){
-    while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps((Y_CENTER_MM + (y_direction*Y_RADIUS_MM)), Y_STEPS_PER_MM))
-    {
-      stepper_c->move_step(2, 0);
-    }
-    Serial.println("--Pushed element");
-    while ( stepper_c->get_steps_count()[Y_AXIS] > mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
-    {
-      stepper_c->move_step(2, 2);
-    }
-    Serial.println("--moved Y to center");
-  }
-  else{
-    while ( stepper_c->get_steps_count()[Y_AXIS] > mm_to_steps((Y_CENTER_MM + (y_direction*Y_RADIUS_MM)), Y_STEPS_PER_MM))
-    {
-      stepper_c->move_step(2, 2);
-    }
-    Serial.println("--Pushed element");
-    while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
-    {
-      stepper_c->move_step(2, 0);
-    }
-    Serial.println("--moved Y to center");
-  } 
-  
+void move_to_next(StepperController *stepper_c, int current_element_index, int x_direction){
   // Move X to the next element
-  if (x_direction > 0){
-    while ( stepper_c->get_steps_count()[X_AXIS] < mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM)) 
-    {
-      stepper_c->move_step(1, 0);
-    }
-    Serial.println("--moved to next");
+  int direction_mask = 0;
+  if (x_direction < 0){
+    direction_mask = 1;
   }
-  else{
-    while ( stepper_c->get_steps_count()[X_AXIS] > mm_to_steps(X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index), X_STEPS_PER_MM)) 
-    {
-      stepper_c->move_step(1, 1);
-    }
-    Serial.println("--moved to next");
+  stepper_c->set_enable(true);
+  while ( stepper_c->get_steps_count()[X_AXIS] != mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM)) 
+  {
+    stepper_c->move_step(1, direction_mask);
   }
   stepper_c->set_enable(false);
+  Serial.println("--moved to next");
+}
 
-  Serial.println("-------------------------");
+void move_element(StepperController *stepper_c, int y_direction){
+  // assuming element is at the Y center coordinate, x on the next element
+  stepper_c->set_enable(true);
+  // Move Y to desired direction 
+  int direction_mask = 0;
+  if(y_direction < 0){
+    direction_mask = 2;
+  }
+  while ( stepper_c->get_steps_count()[Y_AXIS] != mm_to_steps((Y_CENTER_MM + (y_direction*Y_RADIUS_MM)), Y_STEPS_PER_MM))
+  {
+    stepper_c->move_step(2, direction_mask);
+  }
+  Serial.println("--Pushed element");
+  while ( stepper_c->get_steps_count()[Y_AXIS] != mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
+  {
+    stepper_c->move_step(2, (2-direction_mask));
+  }
+  stepper_c->set_enable(false);
+  Serial.println("--moved Y to center");
+  
 }
 
 
@@ -194,13 +178,15 @@ void loop()
   current_steps_mask = 0;
   current_direction_mask = 0;
 
-  state_handler(current_steps_mask, pen_state, &stepper_c);
+  // state_handler(current_steps_mask, pen_state, &stepper_c);
 
   switch (state.sys_mode)
   {
   case PRINT:
       delay(PENDING_TIME_BETWEEN_ELEMENTS);
-      move_next_element(&stepper_c, current_element_index, x_direction, y_direction);  
+      // move_next_element(&stepper_c, current_element_index, x_direction, y_direction); 
+      move_to_next(&stepper_c,current_element_index, x_direction);
+      move_element(&stepper_c, y_direction);
       update_next(&current_element_index, &x_direction, &y_direction);
       break;
   case IDLE:
