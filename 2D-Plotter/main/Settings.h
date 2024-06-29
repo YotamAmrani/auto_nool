@@ -51,9 +51,9 @@
 #define Y_MM_HOMING_OFFSET (5)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (5)
+#define ELEMENTS_COUNT (3)
 #define X_OFFSET_MM (5)
-#define X_ELEMNT_SPACING_MM (5)
+#define X_ELEMNT_SPACING_MM (10)
 #define Y_CENTER_MM (50)
 #define Y_RADIUS_MM (40)
 #define PENDING_TIME_BETWEEN_ELEMENTS (1000 * 1)

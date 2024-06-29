@@ -66,11 +66,6 @@ void auto_homing(StepperController *stepper_c)
       stepper_c->move_step(2, 0);
   }
   Serial.println("Moved Y to center");
-  while ( stepper_c->get_steps_count()[X_AXIS] < mm_to_steps(X_OFFSET_MM, X_STEPS_PER_MM)) 
-  {
-  stepper_c->move_step(1, 0);
-  }
-  Serial.println("Moved X to first element");
 
   stepper_c->set_enable(false);
   Serial.println("-------------------------");
@@ -90,19 +85,20 @@ void print_current_position()
 
 
 void update_next(int* current_element_index, int* x_direction, int* y_direction){
-  if ((*current_element_index == ELEMENTS_COUNT-1 && *x_direction > 0 )|| (*current_element_index == 0 && *x_direction < 0)){
+  if ((*current_element_index == ELEMENTS_COUNT && *x_direction > 0 )|| (*current_element_index == 0 && *x_direction < 0)){
     *x_direction = (*x_direction)*(-1);
     state.sys_mode = IDLE;
+    Serial.println("Enter IDLE mode");
   }
-    // calc x axis - change to relative..
-  *current_element_index += *x_direction;
+  // else{
+    *current_element_index += *x_direction;
+  // }
   
-  Serial.print("Current index:");
+  Serial.print("next index:");
   Serial.println(*current_element_index);
-  Serial.print("Current x direction:");
+  Serial.print("next x direction:");
   Serial.println(*x_direction);
 }
-
 
 void move_to_next(StepperController *stepper_c, int current_element_index, int x_direction){
   // Move X to the next element
@@ -166,7 +162,7 @@ void setup()
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   auto_homing(&stepper_c);
-  Serial.println("Entered Idle mode");
+  // Serial.println("Entered Idle mode");
   stepper_c.set_enable(false);
   state.sys_mode = PRINT;
 
@@ -184,15 +180,27 @@ void loop()
   {
   case PRINT:
       delay(PENDING_TIME_BETWEEN_ELEMENTS);
-      // move_next_element(&stepper_c, current_element_index, x_direction, y_direction); 
-      move_to_next(&stepper_c,current_element_index, x_direction);
-      move_element(&stepper_c, y_direction);
+      Serial.println("-------------------------");
+      print_current_position();
+      if (x_direction > 0){
+        move_to_next(&stepper_c,current_element_index, x_direction);
+        print_current_position();
+        move_element(&stepper_c, y_direction);
+        print_current_position();
+      }
+      else{
+        move_element(&stepper_c, y_direction);
+        print_current_position();
+        move_to_next(&stepper_c,current_element_index, x_direction);
+        print_current_position();
+      }
       update_next(&current_element_index, &x_direction, &y_direction);
       break;
-  case IDLE:
 
+  case IDLE:
       if (is_pressed(BUTTON_PIN)){
         state.sys_mode = PRINT;
+        Serial.println("Enter PRINNT mode");
       }
       break;
   default:
