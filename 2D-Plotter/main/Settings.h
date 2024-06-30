@@ -12,8 +12,6 @@
 #define bit_to_sign(x, mask) (((x & mask) != 0) ? -1 : 1)
 #define DIRECTION_INVERT_MASK 3
 
-// SERVO
-#define PEN_DEBOUNCE_TIME 300
 
 // STEPERS CONFIGURATIONS
 #define X_STEP_PIN 5
@@ -74,14 +72,8 @@ int sgn(T val)
 enum State
 {
   IDLE,
-  MOVE,
   PRINT
 };
 
-struct sys_state
-{
-  State sys_mode;
-  long unsigned last_move_time_stamp;
-};
 
 #endif
