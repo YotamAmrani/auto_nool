@@ -66,6 +66,12 @@ void auto_homing(StepperController *stepper_c)
       stepper_c->move_step(2, 0);
   }
   Serial.println("Moved Y to center");
+  // move to The first element 
+  while ( stepper_c->get_steps_count()[X_AXIS] < mm_to_steps(X_OFFSET_MM, Y_STEPS_PER_MM))
+  {
+      stepper_c->move_step(1, 0);
+  }
+  Serial.println("Moved to Element 0");
 
   stepper_c->set_enable(false);
   Serial.println("-------------------------");
@@ -85,15 +91,14 @@ void print_current_position()
 
 
 void update_next(int* current_element_index, int* x_direction, int* y_direction){
-  // if ((*current_element_index == ELEMENTS_COUNT && *x_direction > 0 )|| (*current_element_index == 0 && *x_direction < 0)){
-  //   *x_direction = (*x_direction)*(-1);
-  //   state.sys_mode = IDLE;
-  //   Serial.println("Enter IDLE mode");
-  // }
-  // *current_element_index += *x_direction;
-  state.sys_mode = IDLE;
-  Serial.println("Enter IDLE mode");
-  *x_direction = *x_direction*(-1);
+  if ((*current_element_index == ELEMENTS_COUNT-1 && *x_direction > 0 )|| (*current_element_index == 0 && *x_direction < 0)){
+    *x_direction = (*x_direction)*(-1);
+    state.sys_mode = IDLE;
+    Serial.println("Enter IDLE mode");
+  }
+  else{
+    *current_element_index += *x_direction;
+  }
   
   // Serial.print("next index:");
   // Serial.println(*current_element_index);
@@ -180,25 +185,13 @@ void loop()
   switch (state.sys_mode)
   {
   case PRINT:
-
-      print_current_position();
-      if (x_direction > 0){
-        for (int i=0; i< ELEMENTS_COUNT; i++){
-          delay(PENDING_TIME_BETWEEN_ELEMENTS);
-          Serial.println("-------------------------");
-          move_to_next(&stepper_c,i, x_direction);
-          move_element(&stepper_c, y_direction);
-        }
-      }
-      else{
-        for (int i=ELEMENTS_COUNT-1; i<= 0; i--){
-          delay(PENDING_TIME_BETWEEN_ELEMENTS);
-          Serial.println("-------------------------");
-          move_element(&stepper_c, y_direction);
-          move_to_next(&stepper_c,current_element_index, x_direction);
-        }
-      }
+      delay(PENDING_TIME_BETWEEN_ELEMENTS);
+      // print_current_position();
+      move_to_next(&stepper_c,current_element_index, x_direction); // for element 0 won't move
+      // print_current_position();
+      move_element(&stepper_c, y_direction);
       update_next(&current_element_index, &x_direction, &y_direction);
+      // print_current_position();
       break;
 
   case IDLE:
