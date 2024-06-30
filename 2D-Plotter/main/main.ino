@@ -1,7 +1,5 @@
 #include <Arduino.h>
 #include "StepperController.h"
-#include "Planner.h"
-#include "DrawingObjects.h"
 #include "Settings.h"
 
 // DEFINITIONS:
@@ -79,7 +77,6 @@ void auto_homing(StepperController *stepper_c)
   //  stepper_c->set_limits(Y_MM_MAX_LIMIT,Y_MM_MAX_LIMIT,X_MM_MIN_LIMIT, Y_MM_MIN_LIMIT);
 }
 
-
 void print_current_position()
 {
     Serial.println("Position: ");
@@ -106,6 +103,7 @@ void update_next(int* current_element_index, int* x_direction, int* y_direction)
   // Serial.println(*x_direction);
 }
 
+
 void move_to_next(StepperController *stepper_c, int current_element_index, int x_direction){
   // Move X to the next element
   int direction_mask = 0;
@@ -120,6 +118,7 @@ void move_to_next(StepperController *stepper_c, int current_element_index, int x
   stepper_c->set_enable(false);
   Serial.println("--moved to next");
 }
+
 
 void move_element(StepperController *stepper_c, int y_direction){
   // assuming element is at the Y center coordinate, x on the next element
@@ -179,8 +178,6 @@ void loop()
   /** GET INPUT MASK **/
   current_steps_mask = 0;
   current_direction_mask = 0;
-
-  // state_handler(current_steps_mask, pen_state, &stepper_c);
 
   switch (state.sys_mode)
   {
