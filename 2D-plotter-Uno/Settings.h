@@ -61,7 +61,7 @@
 #define PEN_PENDING_TIME (1000000 * 3)
 
 #define steps_to_mm(steps, ratio) (steps / ratio)
-#define mm_to_steps(mm, ratio) (mm * ratio)
+#define mm_to_steps(mm, ratio) ((unsigned long)mm * ratio)
 
 template <typename T>
 int sgn(T val)

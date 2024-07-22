@@ -10,7 +10,7 @@ Servo pen_controller;
 int pen_state = PEN_OFF;
 StepperController stepper_c = StepperController(&pen_controller);
 
-const int *current_position = stepper_c.get_steps_count();
+const unsigned long *current_position = stepper_c.get_steps_count();
 
 // ELEMENTS STATE
 int ELEMENT_MOVES[ELEMENTS_COUNT] = {0};
@@ -26,10 +26,19 @@ void auto_homing(StepperController *stepper_c)
   stepper_c->set_enable(true);
 
   // Move X to 0    
+
   stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), 0);  
+  unsigned long bla = stepper_c->get_steps_count()[X_AXIS];
+  Serial.println(bla);
+  
+  Serial.println("------");
   while ( digitalRead(X_LIMIT_SW_PIN) && stepper_c->get_steps_count()[X_AXIS] > 0 ) 
   {
       stepper_c->move_step(1, 1); // move backwards
+      unsigned long bla = stepper_c->get_steps_count()[X_AXIS];
+      if(bla % 7900 == 0){
+        Serial.println(bla);
+      }
   }
 
   stepper_c->set_steps_count(0, 0);  

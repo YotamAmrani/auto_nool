@@ -23,9 +23,9 @@ private:
   const int en_pin_;
   unsigned long move_time_stamp_;
   unsigned long steps_rate_;
-  unsigned int steps_counter_[N_AXIS];
-  int max_steps_[N_AXIS];
-  int min_steps_[N_AXIS];
+  unsigned long steps_counter_[N_AXIS];
+  unsigned long max_steps_[N_AXIS];
+  unsigned long min_steps_[N_AXIS];
   const Servo *pen_controller_;
   int servo_value_;
 
@@ -92,7 +92,7 @@ public:
    * Returns the current steps count (i.e. the position of each axis in steps)
    * @return a pointer to steps_counter_ an array of 3 counter, one per each axis X, Y, Z in order.
    */
-  const unsigned int *get_steps_count() const;
+  const unsigned long *get_steps_count() const;
   // https://stackoverflow.com/questions/10716769/c-difference-between-const-positioning
 
   /**
@@ -101,7 +101,7 @@ public:
    * @param x_steps value to set on x axis
    * @param y_steps value to set on y axis
    */
-  void set_steps_count(unsigned int x_steps, unsigned int y_steps);
+  void set_steps_count(unsigned long x_steps, unsigned long y_steps);
 
 /**
   * Set the the system coordinates limits values.

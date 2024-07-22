@@ -48,7 +48,7 @@ void StepperController::set_direction(int current_direction_mask)
   digitalWrite(dir_pin_[Y_AXIS], bit_istrue(current_direction_mask, 1 << Y_AXIS));
 }
 
-void StepperController::set_steps_count(unsigned int x_steps,unsigned int y_steps)
+void StepperController::set_steps_count(unsigned long x_steps,unsigned long y_steps)
 {
   steps_counter_[X_AXIS] = x_steps;
   steps_counter_[Y_AXIS] = y_steps;
@@ -78,7 +78,7 @@ void StepperController::set_limits(int x_steps_max, int y_steps_max, int x_steps
   }
 
 /*    GETTERS    **/
-const unsigned int *StepperController::get_steps_count() const
+const unsigned long *StepperController::get_steps_count() const
 {
   return steps_counter_;
 }
