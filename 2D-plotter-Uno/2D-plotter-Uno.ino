@@ -197,6 +197,28 @@ bool is_pressed(int button_pin){
   return false;
 }
 
+bool is_movement_valid(int ELEMENT_MOVES[ELEMENTS_COUNT], int current_element_index, int micValue){
+  bool result = true;
+  if (current_element_index >= MAX_ELEMENTS_SEQ){
+    int sum = 0;
+    // Serial.print("--");
+    // Serial.println(micValue);
+    for(int i = current_element_index-1; i >= current_element_index - MAX_ELEMENTS_SEQ ;  i-- ){
+      sum += ELEMENT_MOVES[i] == micValue;
+      // Serial.print(i);
+      // Serial.print(":");
+      // Serial.println(ELEMENT_MOVES[i]);
+    }
+    result =  !(sum == MAX_ELEMENTS_SEQ);
+    // Serial.print("--sum: ");
+    // Serial.println(sum);
+    // Serial.print("--result: ");
+    Serial.println(result);
+  }
+  
+  return result;
+}
+
 
 void random_direction(int* y_direction){
   int random_val = random(2);
@@ -238,7 +260,13 @@ void loop()
         state.sys_mode = PRINT;
         Serial.print("Max val: ");
         Serial.println(micValue);
-        y_direction = micValue;
+        if(is_movement_valid(ELEMENT_MOVES, current_element_index, micValue)){
+          y_direction = micValue;
+        }
+        else{
+          y_direction = micValue > 0 ? 0:1;
+        }
+        
         ELEMENT_MOVES[current_element_index] = y_direction;
         micValue = 0;
         state.last_move_time_stamp = micros();

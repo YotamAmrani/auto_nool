@@ -55,6 +55,7 @@
 
 // NOOL ELEMENTS
 #define ELEMENTS_COUNT (10)
+#define MAX_ELEMENTS_SEQ (3)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
