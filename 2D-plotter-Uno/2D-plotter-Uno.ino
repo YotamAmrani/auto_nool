@@ -9,6 +9,7 @@ sys_state state = {IDLE, micros()};
 Servo pen_controller;
 int pen_state = PEN_OFF;
 StepperController stepper_c = StepperController(&pen_controller);
+int micValue = digitalRead(SOUND_SENSOR_PIN);
 
 const unsigned long *current_position = stepper_c.get_steps_count();
 
@@ -16,7 +17,7 @@ const unsigned long *current_position = stepper_c.get_steps_count();
 int ELEMENT_MOVES[ELEMENTS_COUNT] = {0};
 int current_element_index = 0;
 int x_direction = 1;
-int y_direction = 1;
+int y_direction = 0;
 
 
 void auto_homing(StepperController *stepper_c)
@@ -108,7 +109,6 @@ void update_next(int* current_element_index, int* x_direction, int* y_direction)
     *current_element_index += *x_direction;
   }
 //  random_direction(y_direction);
-  ELEMENT_MOVES[*current_element_index] = *y_direction;
 
   // Serial.print("next index:");
   // Serial.println(*current_element_index);
@@ -146,7 +146,10 @@ void move_element(StepperController *stepper_c, int y_direction){
   {
     stepper_c->move_step(2, direction_mask);
   }
-  Serial.println("--Pushed element");
+  Serial.print("--Pushed element: ");
+  Serial.print(current_element_index);
+  Serial.print(" to dir: ");
+  Serial.println(y_direction);
   
   while ( stepper_c->get_steps_count()[Y_AXIS] != mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
   {
@@ -169,6 +172,17 @@ void move_to_first_element(StepperController *stepper_c, int* current_element_in
   *current_element_index = 0;
 }
 
+void print_elements_move(int ELEMENT_MOVES[ELEMENTS_COUNT]){
+  Serial.println("Elements moves:");
+  for(int i = 0; i< ELEMENTS_COUNT; i++ ){
+    Serial.print(i);
+    Serial.print("-");
+    Serial.print(ELEMENT_MOVES[i]);
+    Serial.print(", ");
+  }
+  Serial.println();
+
+}
 
 bool is_pressed(int button_pin){
   bool is_pressed = false;
@@ -201,11 +215,13 @@ void setup()
   pinMode(X_LIMIT_SW_PIN, INPUT_PULLUP);
   pinMode(Y_LIMIT_SW_PIN, INPUT_PULLUP);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(SOUND_SENSOR_PIN, INPUT);
   /** AUTO HOME**/
   auto_homing(&stepper_c);
   stepper_c.set_enable(false);
   Serial.println("Entered Idle mode");
   state.sys_mode = IDLE;
+  state.last_move_time_stamp = micros();
 
 }
 
@@ -220,7 +236,17 @@ void loop()
       // Serial.println(PENDING_TIME_BETWEEN_ELEMENTS);
      if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
         state.sys_mode = PRINT;
-        // do some listening...
+        Serial.print("Max val: ");
+        Serial.println(micValue);
+        y_direction = micValue;
+        ELEMENT_MOVES[current_element_index] = y_direction;
+        micValue = 0;
+        state.last_move_time_stamp = micros();
+     }
+     else
+     {
+        int current_val = (digitalRead(SOUND_SENSOR_PIN));
+        micValue =  (current_val > micValue) ? current_val:micValue;
      }
       
       break;
@@ -231,18 +257,21 @@ void loop()
       // print_current_position();
       move_element(&stepper_c, y_direction);
       state.sys_mode = LISTEN;
+      Serial.println("Enter LISTEN mode");
       update_next(&current_element_index, &x_direction, &y_direction);
       // print_current_position();
-      state.last_move_time_stamp = micros();
+      
       break;
   case IDLE:
 
       // if (is_pressed(BUTTON_PIN)){
-        delay(2000);
+        print_elements_move(ELEMENT_MOVES);
+        delay(7000);
         Serial.println("Pressed!");
         move_to_first_element(&stepper_c,&current_element_index);
-        state.sys_mode = PRINT;
-        Serial.println("Enter PRINT mode");
+        state.sys_mode = LISTEN;
+        Serial.println("Enter LISTEN mode");
+        state.last_move_time_stamp = micros();
       // }
       break;
   default:

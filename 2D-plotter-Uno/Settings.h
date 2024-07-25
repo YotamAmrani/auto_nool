@@ -25,6 +25,9 @@
 #define Y_LIMIT_SW_PIN 10
 #define BUTTON_PIN 11
 
+// STEPERS CONFIGURATIONS
+#define SOUND_SENSOR_PIN 12
+
 
 // SERVO 
 #define SERVO_COMMAND_PIN (13) 
@@ -38,6 +41,8 @@
 #define X_STEPS_PER_MM (79)
 #define Y_STEPS_PER_MM (53)
 
+
+
 // SOFT LIMITS SETTINGS
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
@@ -49,12 +54,12 @@
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (5)
+#define ELEMENTS_COUNT (10)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000000 * 1) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000000 * 10) //milli * seconds
 
 // AUTO PRINTING
 // #define PENDING_TIME (1000000 * 10)
