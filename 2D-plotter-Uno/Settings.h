@@ -42,23 +42,23 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH 1000
+#define X_MM_RAIL_LENGTH  100//1000
 #define Y_MM_RAIL_LENGTH 150
 
 #define X_MM_HOMING_OFFSET (1)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (262)
+#define ELEMENTS_COUNT (5)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS (1000 * 1) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000000 * 1) //milli * seconds
 
 // AUTO PRINTING
-#define PENDING_TIME (1000000 * 10)
-#define PEN_PENDING_TIME (1000000 * 3)
+// #define PENDING_TIME (1000000 * 10)
+// #define PEN_PENDING_TIME ((unsigned long)1000000 * 5)
 
 #define steps_to_mm(steps, ratio) (steps / ratio)
 #define mm_to_steps(mm, ratio) ((unsigned long)mm * ratio)

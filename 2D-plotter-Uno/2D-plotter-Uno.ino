@@ -120,9 +120,9 @@ void update_next(int* current_element_index, int* x_direction, int* y_direction)
 void move_to_next(StepperController *stepper_c, int current_element_index, int x_direction){
   // Move X to the next element
   int direction_mask = 0;
-  if (x_direction < 0){
-    direction_mask = 1;
-  }
+  // if (x_direction < 0){
+  //   direction_mask = 1;
+  // }
   stepper_c->set_enable(true);
   while ( stepper_c->get_steps_count()[X_AXIS] != mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM)) 
   {
@@ -216,11 +216,12 @@ void loop()
   {
 
   case LISTEN:
-       delay(PENDING_TIME_BETWEEN_ELEMENTS);
-//      if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS*1000)){
+      //  delay(PENDING_TIME_BETWEEN_ELEMENTS);
+      // Serial.println(PENDING_TIME_BETWEEN_ELEMENTS);
+     if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
         state.sys_mode = PRINT;
         // do some listening...
-//      }
+     }
       
       break;
   case PRINT:
@@ -236,11 +237,13 @@ void loop()
       break;
   case IDLE:
 
-      if (is_pressed(BUTTON_PIN)){
-        move_to_first_element(&stepper_c,current_element_index);
+      // if (is_pressed(BUTTON_PIN)){
+        delay(2000);
+        Serial.println("Pressed!");
+        move_to_first_element(&stepper_c,&current_element_index);
         state.sys_mode = PRINT;
         Serial.println("Enter PRINT mode");
-      }
+      // }
       break;
   default:
       break;
