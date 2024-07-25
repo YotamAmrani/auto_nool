@@ -28,8 +28,6 @@ void auto_homing(StepperController *stepper_c)
   // Move X to 0    
 
   stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), 0);  
-  unsigned long bla = stepper_c->get_steps_count()[X_AXIS];
-  Serial.println(bla);
   
   Serial.println("------");
   while ( digitalRead(X_LIMIT_SW_PIN) && stepper_c->get_steps_count()[X_AXIS] > 0 ) 
@@ -40,21 +38,23 @@ void auto_homing(StepperController *stepper_c)
         Serial.println(bla);
       }
   }
-
+  
   stepper_c->set_steps_count(0, 0);  
   while (stepper_c->get_steps_count()[X_AXIS] < mm_to_steps(X_MM_HOMING_OFFSET, X_STEPS_PER_MM))
   {
       stepper_c->move_step(1, 0);
   }
   stepper_c->set_steps_count(0, 0);  
+  
   Serial.println("Moved X axis to place!");
 
+  
   stepper_c->set_steps_count(0, mm_to_steps((Y_MM_RAIL_LENGTH), Y_STEPS_PER_MM));  
   while (stepper_c->get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN))
   {
       stepper_c->move_step(2, 2); // move backwards
   }
-
+  
   while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET, Y_STEPS_PER_MM))
   {
       stepper_c->move_step(2, 0);
@@ -203,7 +203,6 @@ void setup()
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   /** AUTO HOME**/
   auto_homing(&stepper_c);
-  
   stepper_c.set_enable(false);
   Serial.println("Entered Idle mode");
   state.sys_mode = IDLE;
@@ -226,6 +225,7 @@ void loop()
       break;
   case PRINT:
       // print_current_position();
+
       move_to_next(&stepper_c,current_element_index, x_direction); // get skipped on element 0 and last element
       // print_current_position();
       move_element(&stepper_c, y_direction);
@@ -235,6 +235,7 @@ void loop()
       state.last_move_time_stamp = micros();
       break;
   case IDLE:
+
       if (is_pressed(BUTTON_PIN)){
         move_to_first_element(&stepper_c,current_element_index);
         state.sys_mode = PRINT;

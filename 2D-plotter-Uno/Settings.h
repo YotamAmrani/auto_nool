@@ -36,7 +36,7 @@
 #define STEP_PULSE_LENGTH 20
 #define STEPS_RATE 500
 #define X_STEPS_PER_MM (79)
-#define Y_STEPS_PER_MM (40)
+#define Y_STEPS_PER_MM (53)
 
 // SOFT LIMITS SETTINGS
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
@@ -45,7 +45,7 @@
 #define X_MM_RAIL_LENGTH 1000
 #define Y_MM_RAIL_LENGTH 150
 
-#define X_MM_HOMING_OFFSET (3.2)
+#define X_MM_HOMING_OFFSET (1)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
