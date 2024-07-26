@@ -17,7 +17,7 @@ const unsigned long *current_position = stepper_c.get_steps_count();
 int ELEMENT_MOVES[ELEMENTS_COUNT] = {0};
 int current_element_index = 0;
 int x_direction = 1;
-int y_direction = 0;
+int y_direction = 1;
 
 
 void auto_homing(StepperController *stepper_c)
@@ -124,10 +124,17 @@ void move_to_next(StepperController *stepper_c, int current_element_index, int x
   //   direction_mask = 1;
   // }
   stepper_c->set_enable(true);
-  while ( stepper_c->get_steps_count()[X_AXIS] != mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM)) 
+  unsigned long steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM);
+  if (current_element_index >= 80){
+    steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM) - X_STEPS_PER_MM;
+  }
+
+  while ( stepper_c->get_steps_count()[X_AXIS] != steps_to_move) 
   {
     stepper_c->move_step(1, direction_mask);
   }
+  
+
   stepper_c->set_enable(false);
   Serial.print("--moved to element: ");
   Serial.println(current_element_index);
@@ -176,7 +183,7 @@ void print_elements_move(int ELEMENT_MOVES[ELEMENTS_COUNT]){
   Serial.println("Elements moves:");
   for(int i = 0; i< ELEMENTS_COUNT; i++ ){
     Serial.print(i);
-    Serial.print("-");
+    Serial.print(":");
     Serial.print(ELEMENT_MOVES[i]);
     Serial.print(", ");
   }
@@ -254,28 +261,28 @@ void loop()
   {
 
   case LISTEN:
-      //  delay(PENDING_TIME_BETWEEN_ELEMENTS);
-      // Serial.println(PENDING_TIME_BETWEEN_ELEMENTS);
-     if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
+       delay(100);
+        // Serial.println(PENDING_TIME_BETWEEN_ELEMENTS);
+    //  if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
         state.sys_mode = PRINT;
-        Serial.print("Max val: ");
-        Serial.println(micValue);
-        if(is_movement_valid(ELEMENT_MOVES, current_element_index, micValue)){
-          y_direction = micValue;
-        }
-        else{
-          y_direction = micValue > 0 ? 0:1;
-        }
+        // Serial.print("Max val: ");
+        // Serial.println(micValue);
+        // if(is_movement_valid(ELEMENT_MOVES, current_element_index, micValue)){
+          // y_direction = micValue;
+        // }
+        // else{
+          // y_direction = micValue > 0 ? 0:1;
+        // }
         
         ELEMENT_MOVES[current_element_index] = y_direction;
         micValue = 0;
         state.last_move_time_stamp = micros();
-     }
-     else
-     {
-        int current_val = (digitalRead(SOUND_SENSOR_PIN));
-        micValue =  (current_val > micValue) ? current_val:micValue;
-     }
+    //  }
+    //  else
+    //  {
+        // int current_val = (digitalRead(SOUND_SENSOR_PIN));
+        // micValue =  (current_val > micValue) ? current_val:micValue;
+    //  }
       
       break;
   case PRINT:
@@ -292,15 +299,15 @@ void loop()
       break;
   case IDLE:
 
-      // if (is_pressed(BUTTON_PIN)){
+      if (is_pressed(BUTTON_PIN)){
         print_elements_move(ELEMENT_MOVES);
-        delay(7000);
-        Serial.println("Pressed!");
+        // delay(1000);
+        // Serial.println("Pressed!");
         move_to_first_element(&stepper_c,&current_element_index);
         state.sys_mode = LISTEN;
         Serial.println("Enter LISTEN mode");
         state.last_move_time_stamp = micros();
-      // }
+      }
       break;
   default:
       break;

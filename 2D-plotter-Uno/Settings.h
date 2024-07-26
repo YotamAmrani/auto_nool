@@ -15,9 +15,9 @@
 
 // STEPERS CONFIGURATIONS
 #define X_STEP_PIN 2
-#define Y_STEP_PIN 3
+#define Y_STEP_PIN 4
 #define X_DIR_PIN 5
-#define Y_DIR_PIN 6
+#define Y_DIR_PIN 7
 #define EN_PIN 8
 
 // LIMIT SWITCHES
@@ -47,20 +47,20 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  100//1000
+#define X_MM_RAIL_LENGTH  1050//1000
 #define Y_MM_RAIL_LENGTH 150
 
 #define X_MM_HOMING_OFFSET (1)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (10)
+#define ELEMENTS_COUNT (262)
 #define MAX_ELEMENTS_SEQ (3)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000000 * 10) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 500) //milli * seconds
 
 // AUTO PRINTING
 // #define PENDING_TIME (1000000 * 10)

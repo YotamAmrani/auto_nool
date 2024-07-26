@@ -7,8 +7,8 @@
 // defines pins
 #define stepPin 2
 #define dirPin 5
-#define stepPin2 3
-#define dirPin2 6
+#define stepPin2 4
+#define dirPin2 7
  
 void setup() {
   Serial.begin(115200);
