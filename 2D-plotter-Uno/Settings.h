@@ -15,9 +15,9 @@
 
 // STEPERS CONFIGURATIONS
 #define X_STEP_PIN 2
-#define Y_STEP_PIN 4
+#define Y_STEP_PIN 3
 #define X_DIR_PIN 5
-#define Y_DIR_PIN 7
+#define Y_DIR_PIN 6
 #define EN_PIN 8
 
 // LIMIT SWITCHES
@@ -47,10 +47,10 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  1050//1000
+#define X_MM_RAIL_LENGTH  1000//1000
 #define Y_MM_RAIL_LENGTH 150
 
-#define X_MM_HOMING_OFFSET (1)
+#define X_MM_HOMING_OFFSET (0)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
