@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "StepperController.h"
 #include "Settings.h"
+#include "element_movement.h"
 
 // DEFINITIONS:
 void print_current_position();
@@ -11,11 +12,13 @@ int pen_state = PEN_OFF;
 StepperController stepper_c = StepperController(&pen_controller);
 int micValue = digitalRead(SOUND_SENSOR_PIN);
 
+
 const unsigned long *current_position = stepper_c.get_steps_count();
 
 // ELEMENTS STATE
 int ELEMENT_MOVES[ELEMENTS_COUNT] = {0};
 int current_element_index = 0;
+unsigned long tune_rate = 0;
 int x_direction = 1;
 int y_direction = 1;
 
@@ -114,12 +117,15 @@ void update_next(int* current_element_index, int* x_direction, int* y_direction)
 void move_to_next(StepperController *stepper_c, int current_element_index, int x_direction){
   // Move X to the next element
   int direction_mask = 0;
-  unsigned long steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM);
-  if (current_element_index >= 100){
-    steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM) - X_STEPS_PER_MM;
-  }
 
-  while ( stepper_c->get_steps_count()[X_AXIS] != steps_to_move) 
+  if (current_element_index % 30 == 0 && current_element_index != 0){
+    // steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM) - X_STEPS_PER_MM;
+    tune_rate += X_STEPS_PER_MM;
+    // Serial.print(tune_rate);
+  }
+  unsigned long steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM);
+
+  while ( stepper_c->get_steps_count()[X_AXIS] != steps_to_move-tune_rate) 
   {
     stepper_c->move_step(1, direction_mask);
   }
@@ -250,7 +256,7 @@ void loop()
         // Serial.println(PENDING_TIME_BETWEEN_ELEMENTS);
     //  if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
         state.sys_mode = PRINT;
-        Serial.println("Enter LISTEN mode");
+        Serial.println("Enter PRINT mode");
         // Serial.print("Max val: ");
         // Serial.println(micValue);
         // if(is_movement_valid(ELEMENT_MOVES, current_element_index, micValue)){
