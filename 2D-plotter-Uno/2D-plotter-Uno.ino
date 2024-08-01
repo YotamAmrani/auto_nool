@@ -243,13 +243,13 @@ void test_negative_direction(int current_element_index, int* y_direction){
 }
 
 
-void detect_direction(int current_element_index,int* y_direction, int *micValue){
+void detect_direction(int current_element_index,int* y_direction, int *mic_value){
   // Serial.print("Max val: ");
   // Serial.println(*micValue);
 
   int current_val = (digitalRead(SOUND_SENSOR_PIN));
-  *micValue =  (current_val > *micValue) ? current_val: *micValue;
-  *y_direction = (*micValue > 0) - (*micValue == 0);
+  *mic_value =  (current_val > *mic_value) ? current_val: *mic_value;
+  *y_direction = (*mic_value > 0) - (*mic_value == 0);
 
 }
 
@@ -313,9 +313,8 @@ void loop()
   {
   case LISTEN:
      if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
-        state.sys_mode = PRINT;
         Serial.println("Enter PRINT mode");
-        
+        state.sys_mode = PRINT;
         // update current movement
         correct_y_seq(ELEMENT_MOVES, current_element_index, &y_direction);
         random_val_was_chosen = false;
@@ -330,10 +329,10 @@ void loop()
       move_to_next(&stepper_c, current_element_index); // get skipped on element 0 and last element
       // print_current_position();
       move_element(&stepper_c, y_direction);
-      state.sys_mode = LISTEN;
-      Serial.println("Enter LISTEN mode");
       update_next(&current_element_index, &x_direction);
       // print_current_position();
+      Serial.println("Enter LISTEN mode");
+      state.sys_mode = LISTEN;
       state.last_move_time_stamp = micros();
     break;
   case IDLE:
@@ -344,8 +343,8 @@ void loop()
         cross_state = cross_state ? 0:1;
         
         // Enter listen mode
-        state.sys_mode = LISTEN;
         Serial.println("Enter LISTEN mode");
+        state.sys_mode = LISTEN;
         state.last_move_time_stamp = micros();
       }
       break;
