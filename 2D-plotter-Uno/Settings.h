@@ -47,7 +47,7 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  100//1000
+#define X_MM_RAIL_LENGTH  1060//1000
 #define Y_MM_RAIL_LENGTH 150
 
 #define X_MM_HOMING_OFFSET (0)
