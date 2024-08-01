@@ -47,20 +47,20 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  1000//1000
+#define X_MM_RAIL_LENGTH  100//1000
 #define Y_MM_RAIL_LENGTH 150
 
 #define X_MM_HOMING_OFFSET (0)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (262)
+#define ELEMENTS_COUNT (10)
 #define MAX_ELEMENTS_SEQ (3)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 500) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 5000) //milli * seconds
 
 // AUTO PRINTING
 // #define PENDING_TIME (1000000 * 10)
@@ -82,9 +82,18 @@ enum State
   LISTEN
 };
 
+enum Mode
+{
+  TEST,
+  CROSS,
+  RANDOM,
+  SOUND
+};
+
 struct sys_state
 {
   State sys_mode;
+  Mode movement_mode;
   long unsigned last_move_time_stamp;
 };
 
