@@ -1,12 +1,10 @@
 #include "StepperController.h"
 
-StepperController::StepperController(Servo *pen_controller) : step_pin_{X_STEP_PIN, Y_STEP_PIN},
+StepperController::StepperController() : step_pin_{X_STEP_PIN, Y_STEP_PIN},
                                          dir_pin_{X_DIR_PIN, Y_DIR_PIN},
-                                         servo_control_pin_(SERVO_COMMAND_PIN),
                                          en_pin_(EN_PIN), steps_counter_{0, 0},
                                          max_steps_{mm_to_steps(X_MM_RAIL_LENGTH, X_STEPS_PER_MM), mm_to_steps(Y_MM_RAIL_LENGTH, Y_STEPS_PER_MM)},
-                                         min_steps_{mm_to_steps((0), X_STEPS_PER_MM), mm_to_steps((0), Y_STEPS_PER_MM)},
-                                         pen_controller_(pen_controller),servo_value_(0)
+                                         min_steps_{mm_to_steps((0), X_STEPS_PER_MM), mm_to_steps((0), Y_STEPS_PER_MM)}
 
 {
   // Initializing values
@@ -52,21 +50,6 @@ void StepperController::set_steps_count(unsigned long x_steps,unsigned long y_st
 {
   steps_counter_[X_AXIS] = x_steps;
   steps_counter_[Y_AXIS] = y_steps;
-}
-
-
-void StepperController::set_servo_value(int servo_value)
-{
-  if (servo_value != servo_value_){
-    servo_value_ = servo_value;
-    pen_controller_->write(servo_value); 
-    delay(100);
-  }
-
-}
-
-int StepperController::get_servo_value(){
-  return servo_value_;
 }
 
 

@@ -47,14 +47,14 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  1060//1000
+#define X_MM_RAIL_LENGTH  100//1060
 #define Y_MM_RAIL_LENGTH 150
 
 #define X_MM_HOMING_OFFSET (0)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (263)
+#define ELEMENTS_COUNT (10)
 #define MAX_ELEMENTS_SEQ (3)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
@@ -63,9 +63,6 @@
 #define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 500) //milli * seconds
 
 // AUTO PRINTING
-// #define PENDING_TIME (1000000 * 10)
-// #define PEN_PENDING_TIME ((unsigned long)1000000 * 5)
-
 #define steps_to_mm(steps, ratio) (steps / ratio)
 #define mm_to_steps(mm, ratio) ((unsigned long)mm * ratio)
 
@@ -85,6 +82,7 @@ enum State
 enum Mode
 {
   TEST,
+  TEST_NEG,
   CROSS,
   RANDOM,
   SOUND

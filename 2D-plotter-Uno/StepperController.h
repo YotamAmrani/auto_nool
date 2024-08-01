@@ -2,40 +2,31 @@
 #ifndef STEPPER_CONTROLLER_H
 #define STEPPER_CONTROLLER_H
 #include <Arduino.h>
-#include <Servo.h>
-
 #include "Settings.h"
 
-struct step_plan
-{
-  unsigned long steps_rate;
-  int steps_mask;
-  int direction_mask;
-  bool led_state;
-};
 
 class StepperController
 {
 private:
   const int step_pin_[N_AXIS];
   const int dir_pin_[N_AXIS];
-  const int servo_control_pin_;
   const int en_pin_;
   unsigned long move_time_stamp_;
   unsigned long steps_rate_;
   unsigned long steps_counter_[N_AXIS];
   unsigned long max_steps_[N_AXIS];
   unsigned long min_steps_[N_AXIS];
-  const Servo *pen_controller_;
-  int servo_value_;
 
 
 public:
   /**
    * Stepper Controller constructor.
    */
-  StepperController(Servo *pen_controller);
+  StepperController();
 
+  /**
+   * move one step in all motors
+   */
   void step(int current_step_mask, int current_direction_mask);
 
 
@@ -60,19 +51,6 @@ public:
    */
   void set_enable(bool isEnabled);
 
-  /**
-   * Set servo angle value (in the range of 0 to 255)
-   *
-   * @param servo_value - PWM value
-   */
-  void set_servo_value(int servo_value);
-
-
-    /**
-   * Get The servo angle value (in the range of 0 to 255)
-   * @return int - servo current angle value
-   */
-  int get_servo_value();
 
   /**
    * Moving the system one step according to the current movement and direction masks.
