@@ -37,7 +37,7 @@
 
 // SYSTEM CONFIGURATIONS
 #define STEP_PULSE_LENGTH 20
-#define STEPS_RATE 500
+#define STEPS_RATE 700
 #define X_STEPS_PER_MM (79)
 #define Y_STEPS_PER_MM (53)
 
@@ -47,14 +47,14 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  100//1060
+#define X_MM_RAIL_LENGTH  1060
 #define Y_MM_RAIL_LENGTH 150
 
 #define X_MM_HOMING_OFFSET (0)
 #define Y_MM_HOMING_OFFSET (3)
 
 // NOOL ELEMENTS
-#define ELEMENTS_COUNT (10)
+#define ELEMENTS_COUNT (263)
 #define MAX_ELEMENTS_SEQ (3)
 #define X_OFFSET_MM (2)
 #define X_ELEMNT_SPACING_MM (4)
