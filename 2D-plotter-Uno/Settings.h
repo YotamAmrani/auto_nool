@@ -4,7 +4,6 @@
 // Instructions indices
 #define X_AXIS 0
 #define Y_AXIS 1
-#define SERVO_ANGLE 2
 
 #define N_AXIS 2
 #define N_INSTRUCTIONS 3
@@ -29,12 +28,6 @@
 #define SOUND_SENSOR_PIN 12
 
 
-// SERVO 
-#define SERVO_COMMAND_PIN (13) 
-#define PEN_ON 0
-#define PEN_OFF 30
-
-
 // SYSTEM CONFIGURATIONS
 #define STEP_PULSE_LENGTH 20
 #define STEPS_RATE 700
@@ -45,7 +38,7 @@
 
 // SOFT LIMITS SETTINGS
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
-#define AUTO_HOME_STEPS_RATE 500 //the bigger the slower
+#define AUTO_HOME_STEPS_RATE 700 //the bigger the slower
 
 #define X_MM_RAIL_LENGTH  1060
 #define Y_MM_RAIL_LENGTH 150
