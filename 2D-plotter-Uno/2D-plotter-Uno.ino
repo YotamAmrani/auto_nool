@@ -121,7 +121,7 @@ void move_to_next(StepperController *stepper_c, int current_element_index){
     tune_rate += X_STEPS_PER_MM;
   }
   unsigned long steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM);
-
+  
   while ( stepper_c->get_steps_count()[X_AXIS] != steps_to_move-tune_rate) 
   {
     stepper_c->move_step(1, direction_mask);
@@ -333,17 +333,21 @@ void loop()
       move_element(&stepper_c, y_direction);
       update_next(&current_element_index, &x_direction);
       // print_current_position();
-      Serial.println("Enter LISTEN mode");
-      state.sys_mode = LISTEN;
-      state.last_move_time_stamp = micros();
+      if (state.sys_mode == PRINT){
+        Serial.println("Enter LISTEN mode");
+        state.sys_mode = LISTEN;
+        state.last_move_time_stamp = micros();
+      }
+
     break;
   case IDLE:
       if (is_pressed(BUTTON_PIN)){
         print_elements_move(ELEMENT_MOVES);
         stepper_c.set_enable(true);
+        tune_rate = 0;
         move_to_first_element(&stepper_c,&current_element_index);
         cross_state = cross_state ? 0:1;
-        tune_rate = 0;
+        
         
         // Enter listen mode
         Serial.println("Enter LISTEN mode");
