@@ -316,7 +316,9 @@ void loop()
         Serial.println("Enter PRINT mode");
         state.sys_mode = PRINT;
         // update current movement
+        #ifdef VALIDATE_MOVEMENT
         correct_y_seq(ELEMENT_MOVES, current_element_index, &y_direction);
+        #endif
         random_val_was_chosen = false;
         mic_value = 0;
          

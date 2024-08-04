@@ -37,6 +37,7 @@
 
 
 // SOFT LIMITS SETTINGS
+#define VALIDATE_MOVEMENT 1
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 700 //the bigger the slower
 
