@@ -32,7 +32,7 @@
 #define STEP_PULSE_LENGTH 20
 #define STEPS_RATE 700
 #define X_STEPS_PER_MM (79)
-#define Y_STEPS_PER_MM (53)
+#define Y_STEPS_PER_MM (10)
 
 
 
@@ -54,7 +54,7 @@
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 500) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 120 ) //milli * seconds
 
 // AUTO PRINTING
 #define steps_to_mm(steps, ratio) (steps / ratio)

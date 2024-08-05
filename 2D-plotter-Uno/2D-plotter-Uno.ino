@@ -116,7 +116,7 @@ void move_to_next(StepperController *stepper_c, int current_element_index){
   // Move X to the next element
   int direction_mask = 0;
 
-  if (current_element_index % 40 == 0 && current_element_index != 0){
+  if (current_element_index % 50 == 0 && current_element_index != 0){
     // steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM) - X_STEPS_PER_MM;
     tune_rate += X_STEPS_PER_MM;
   }
