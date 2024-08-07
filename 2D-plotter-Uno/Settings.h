@@ -54,7 +54,7 @@
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 120 ) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 1 ) //milli * seconds
 
 // AUTO PRINTING
 #define steps_to_mm(steps, ratio) (steps / ratio)

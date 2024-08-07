@@ -328,6 +328,7 @@ void loop()
       }
     break;
   case PRINT:      
+      // stepper_c.set_enable(true);
       move_to_next(&stepper_c, current_element_index); // get skipped on element 0 and last element
       // print_current_position();
       move_element(&stepper_c, y_direction);
@@ -338,7 +339,7 @@ void loop()
         state.sys_mode = LISTEN;
         state.last_move_time_stamp = micros();
       }
-
+    // stepper_c.set_enable(false);
     break;
   case IDLE:
       if (is_pressed(BUTTON_PIN)){
