@@ -42,10 +42,30 @@ void auto_homing(StepperController *stepper_c)
   stepper_c->set_enable(true);
 
   // Move X to 0    
-
-  stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), 0);  
-  
   Serial.println("------");
+  
+  stepper_c->set_steps_count(0, mm_to_steps((Y_MM_RAIL_LENGTH), Y_STEPS_PER_MM));  
+  while (stepper_c->get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN))
+  {
+      stepper_c->move_step(2, 2); // move backwards
+  }
+  
+  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET, Y_STEPS_PER_MM))
+  {
+      stepper_c->move_step(2, 0);
+  }
+  stepper_c->set_steps_count(0, 0);
+  Serial.println("Moved Y axis to place.");
+  
+  // move to the center of Y axis 
+  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
+  {
+      stepper_c->move_step(2, 0);
+  }
+  Serial.println("Moved Y to center");
+
+  //------------------------------------
+  stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), 0);  
   while ( digitalRead(X_LIMIT_SW_PIN) && stepper_c->get_steps_count()[X_AXIS] > 0 ) 
   {
       stepper_c->move_step(1, 1); // move backwards
@@ -64,30 +84,12 @@ void auto_homing(StepperController *stepper_c)
   
   Serial.println("Moved X axis to place!");
 
-  
-  stepper_c->set_steps_count(0, mm_to_steps((Y_MM_RAIL_LENGTH), Y_STEPS_PER_MM));  
-  while (stepper_c->get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN))
-  {
-      stepper_c->move_step(2, 2); // move backwards
-  }
-  
-  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET, Y_STEPS_PER_MM))
-  {
-      stepper_c->move_step(2, 0);
-  }
-  stepper_c->set_steps_count(0, 0);
-  Serial.println("Moved Y axis to place.");
-  
+  // ---------------------------------------------------
   stepper_c->set_steps_rate(STEPS_RATE);
   Serial.println("Auto homing completed successfully! ");
   print_current_position();  
-  
-  // move to the center of Y axis 
-  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
-  {
-      stepper_c->move_step(2, 0);
-  }
-  Serial.println("Moved Y to center");
+
+
   // move to The first element 
   while ( stepper_c->get_steps_count()[X_AXIS] < mm_to_steps(X_OFFSET_MM, X_STEPS_PER_MM))
   {
@@ -328,7 +330,9 @@ void loop()
       }
     break;
   case PRINT:      
-      // stepper_c.set_enable(true);
+      
+      stepper_c.set_enable(true);
+
       move_to_next(&stepper_c, current_element_index); // get skipped on element 0 and last element
       // print_current_position();
       move_element(&stepper_c, y_direction);
@@ -339,10 +343,14 @@ void loop()
         state.sys_mode = LISTEN;
         state.last_move_time_stamp = micros();
       }
-    // stepper_c.set_enable(false);
+
+    delay(300); //delay due to timing string bounce
+    stepper_c.set_enable(false);
     break;
   case IDLE:
+      #ifdef PRESENTATION_MODE
       if (is_pressed(BUTTON_PIN)){
+      #endif
         print_elements_move(ELEMENT_MOVES);
         stepper_c.set_enable(true);
         tune_rate = 0;
@@ -354,7 +362,9 @@ void loop()
         Serial.println("Enter LISTEN mode");
         state.sys_mode = LISTEN;
         state.last_move_time_stamp = micros();
+      #ifdef PRESENTATION_MODE
       }
+      #endif
       break;
   default:
       break;

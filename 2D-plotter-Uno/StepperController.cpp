@@ -36,6 +36,7 @@ void StepperController::set_steps_rate(unsigned long steps_rate)
 void StepperController::set_enable(bool isEnabled)
 {
   digitalWrite(EN_PIN, !isEnabled);
+  delay(100);
 }
 
 void StepperController::set_direction(int current_direction_mask)
