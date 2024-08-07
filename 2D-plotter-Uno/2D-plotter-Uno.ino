@@ -124,7 +124,7 @@ void move_to_next(StepperController *stepper_c, int current_element_index){
   }
   unsigned long steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM);
   
-  while ( stepper_c->get_steps_count()[X_AXIS] != steps_to_move-tune_rate) 
+  while ( stepper_c->get_steps_count()[X_AXIS] != (steps_to_move - tune_rate + X_STEPS_PER_MM)) // adding X_STEPS_PER_MM to skip the first element
   {
     stepper_c->move_step(1, direction_mask);
   }
