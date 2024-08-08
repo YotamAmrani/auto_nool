@@ -354,7 +354,9 @@ void loop()
         print_elements_move(ELEMENT_MOVES);
         stepper_c.set_enable(true);
         tune_rate = 0;
-        move_to_first_element(&stepper_c,&current_element_index);
+        // move_to_first_element(&stepper_c,&current_element_index);
+        auto_homing(&stepper_c);
+
         cross_state = cross_state ? 0:1;
         
         
