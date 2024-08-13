@@ -37,7 +37,6 @@
 
 
 // SOFT LIMITS SETTINGS
-#define VALIDATE_MOVEMENT 1
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 700 //the bigger the slower
 
@@ -47,6 +46,10 @@
 #define X_MM_HOMING_OFFSET (0)
 #define Y_MM_HOMING_OFFSET (3)
 
+// SYSTEM MODES
+#define VALIDATE_MOVEMENT 1
+#define EXHIBITION_MODE 1
+
 // NOOL ELEMENTS
 #define ELEMENTS_COUNT (263)
 #define MAX_ELEMENTS_SEQ (3)
@@ -55,6 +58,8 @@
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
 #define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 1 ) //milli * seconds
+#define PENDING_TIME (120) //seconds
+#define CALIBRATION_RATE (50) // elements
 
 // AUTO PRINTING
 #define steps_to_mm(steps, ratio) (steps / ratio)

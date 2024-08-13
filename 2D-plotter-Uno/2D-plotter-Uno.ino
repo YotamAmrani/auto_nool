@@ -21,6 +21,7 @@ int current_element_index = 0;
 unsigned long tune_rate = 0;
 int x_direction = 1;
 int y_direction = 1;
+unsigned int finished_rows = 0;
 int cross_state = 1;
 int random_val_was_chosen = false;
 int mic_value = digitalRead(SOUND_SENSOR_PIN);
@@ -35,17 +36,20 @@ void print_current_position()
 }
 
 
-void auto_homing(StepperController *stepper_c)
+void auto_homing(StepperController *stepper_c, int *current_element_index)
 {
   Serial.println("Auto homing! ");
   stepper_c->set_steps_rate(AUTO_HOME_STEPS_RATE);
   stepper_c->set_enable(true);
+  Serial.println("~~Turn motors on.~~");
 
   // Move X to 0    
 
   stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), 0);  
   
   Serial.println("------");
+  // print_current_position();
+
   while ( digitalRead(X_LIMIT_SW_PIN) && stepper_c->get_steps_count()[X_AXIS] > 0 ) 
   {
       stepper_c->move_step(1, 1); // move backwards
@@ -93,6 +97,8 @@ void auto_homing(StepperController *stepper_c)
   {
       stepper_c->move_step(1, 0);
   }
+
+  *current_element_index = 0;
   Serial.println("Moved to Element 0");
   Serial.println("-------------------------");
 
@@ -104,6 +110,8 @@ void update_next(int* current_element_index, int* x_direction){
     // case it is the last element - enter IDLE state
     state.sys_mode = IDLE;
     stepper_c.set_enable(false);
+    Serial.println("-------------------------");
+    Serial.println("~~Turn motors off.~~");
     Serial.println("Enter IDLE mode");
   }
   else{
@@ -116,7 +124,7 @@ void move_to_next(StepperController *stepper_c, int current_element_index){
   // Move X to the next element
   int direction_mask = 0;
 
-  if (current_element_index % 50 == 0 && current_element_index != 0){
+  if (current_element_index % CALIBRATION_RATE == 0 && current_element_index != 0){
     // steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM) - X_STEPS_PER_MM;
     tune_rate += X_STEPS_PER_MM;
   }
@@ -298,7 +306,7 @@ void setup()
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(SOUND_SENSOR_PIN, INPUT);
   /** AUTO HOME**/
-  auto_homing(&stepper_c);
+  // auto_homing(&stepper_c, &current_element_index);
   
   Serial.println("Entered Idle mode");
   state.sys_mode = IDLE;
@@ -342,11 +350,20 @@ void loop()
     // stepper_c.set_enable(false);
     break;
   case IDLE:
-      if (is_pressed(BUTTON_PIN)){
+      if (is_pressed(BUTTON_PIN) || EXHIBITION_MODE){
+        // cool off engines when row is done
+        if (EXHIBITION_MODE && finished_rows){
+          Serial.print("Pending for: ");
+          Serial.print(PENDING_TIME);
+          Serial.println(" seconds.");
+          delay((unsigned long)1000 * PENDING_TIME);
+        }
+        finished_rows++;
+        
         print_elements_move(ELEMENT_MOVES);
-        stepper_c.set_enable(true);
+        // stepper_c.set_enable(true);
         tune_rate = 0;
-        move_to_first_element(&stepper_c,&current_element_index);
+        auto_homing(&stepper_c, &current_element_index);
         cross_state = cross_state ? 0:1;
         
         
