@@ -47,8 +47,17 @@
 #define Y_MM_HOMING_OFFSET (3)
 
 // SYSTEM MODES
-#define VALIDATE_MOVEMENT 1
-#define EXHIBITION_MODE 1
+/* MOVEMENT_MODE determines
+  how the system elemnts will be pushed.
+  - CROSS - shti va erev 
+  - RANDOM - random
+  - TEST - all elements are pushed farwrd
+  - TEST_NEG - same as test, but to the other direction
+*/
+#define MOVEMENT_MODE RANDOM 
+
+#define VALIDATE_MOVEMENT 1 // 1 or 0 - if set to 1, after MAX_ELEMENTS_SEQ consequtive elements, the system will move the next element to the opposite direction. 
+#define OPERATION_MODE EXHIBITION // can be set to EXHIBITION or   PRESENTATION
 
 // NOOL ELEMENTS
 #define ELEMENTS_COUNT (263)
@@ -58,7 +67,7 @@
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
 #define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 1 ) //milli * seconds
-#define PENDING_TIME (120) //seconds
+#define COOLING_TIME (120) //seconds
 #define CALIBRATION_RATE (50) // elements
 
 // AUTO PRINTING
@@ -71,14 +80,14 @@ int sgn(T val)
   return (T(0) < val) - (val < T(0));
 }
 
-enum State
+enum System_state
 {
   IDLE,
   PRINT,
   LISTEN
 };
 
-enum Mode
+enum Movement_mode
 {
   TEST,
   TEST_NEG,
@@ -87,10 +96,18 @@ enum Mode
   SOUND
 };
 
+enum Operation_mode
+{
+  EXHIBITION,
+  PRESENTATION
+};
+
+
 struct sys_state
 {
-  State sys_mode;
-  Mode movement_mode;
+  System_state sys_mode;
+  Movement_mode move_mode;
+  Operation_mode op_mode;
   long unsigned last_move_time_stamp;
 };
 

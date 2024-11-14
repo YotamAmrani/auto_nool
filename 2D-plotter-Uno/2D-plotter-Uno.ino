@@ -3,13 +3,8 @@
 #include "Settings.h"
 #include "element_movement.h"
 
-/* SHIR! - update the value here:
-  CROSS - shti va erev 
-  RANDOM - random
-  TEST - all elements are pushed farwrd
-  TEST_NEG - same as test, but to the other direction
-*/
-sys_state state = {IDLE, RANDOM , micros()};
+
+sys_state state = {IDLE, MOVEMENT_MODE, OPERATION_MODE , micros()};
 
 
 
@@ -263,7 +258,7 @@ void detect_direction(int current_element_index,int* y_direction, int *mic_value
 
 
 void configure_y_direction(int ELEMENT_MOVES[ELEMENTS_COUNT], int current_element_index, int* y_direction, int *micValue){
-  switch (state.movement_mode)
+  switch (state.move_mode)
   {
     case TEST:
       test_direction(current_element_index, y_direction);
@@ -350,13 +345,13 @@ void loop()
     // stepper_c.set_enable(false);
     break;
   case IDLE:
-      if (is_pressed(BUTTON_PIN) || EXHIBITION_MODE){
+      if (is_pressed(BUTTON_PIN) || state.op_mode == EXHIBITION){
         // cool off engines when row is done
-        if (EXHIBITION_MODE && finished_rows){
+        if (state.op_mode == EXHIBITION && finished_rows){
           Serial.print("Pending for: ");
-          Serial.print(PENDING_TIME);
+          Serial.print(COOLING_TIME);
           Serial.println(" seconds.");
-          delay((unsigned long)1000 * PENDING_TIME);
+          delay((unsigned long)1000 * COOLING_TIME);
         }
         finished_rows++;
         
