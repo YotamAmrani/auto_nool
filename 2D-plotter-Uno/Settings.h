@@ -59,6 +59,7 @@
 #define VALIDATE_MOVEMENT 1 // 1 or 0 - if set to 1, after MAX_ELEMENTS_SEQ consequtive elements, the system will move the next element to the opposite direction. 
 #define OPERATION_MODE EXHIBITION // can be set to EXHIBITION or   PRESENTATION
 
+
 // NOOL ELEMENTS
 #define ELEMENTS_COUNT (263)
 #define MAX_ELEMENTS_SEQ (3)
@@ -72,7 +73,9 @@
 
 // AUTO PRINTING
 #define steps_to_mm(steps, ratio) (steps / ratio)
-#define mm_to_steps(mm, ratio) ((unsigned long)mm * ratio)
+//#define mm_to_steps(mm, ratio) ((unsigned long)mm * ratio)
+#define mm_to_steps(mm, ratio) ((unsigned long)(mm) * (ratio) + ((unsigned long)((mm - (unsigned long)(mm)) * (ratio))))
+
 
 template <typename T>
 int sgn(T val)
