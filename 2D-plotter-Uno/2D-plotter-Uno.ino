@@ -331,6 +331,10 @@ void loop()
       }
     break;
   case PRINT:      
+    // if (current_element_index % 15 == 0 && current_element_index != 0){
+    //   delay((unsigned long)1000 * 10);
+    // }
+
       // stepper_c.set_enable(true);
       move_to_next(&stepper_c, current_element_index); // get skipped on element 0 and last element
       // print_current_position();

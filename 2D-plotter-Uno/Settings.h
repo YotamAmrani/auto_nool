@@ -40,11 +40,11 @@
 #define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
 #define AUTO_HOME_STEPS_RATE 700 //the bigger the slower
 
-#define X_MM_RAIL_LENGTH  1060
-#define Y_MM_RAIL_LENGTH 150
+#define X_MM_RAIL_LENGTH  1060 // MM - do not touch
+#define Y_MM_RAIL_LENGTH 150 // MM - do not touch
 
-#define X_MM_HOMING_OFFSET (0)
-#define Y_MM_HOMING_OFFSET (3)
+#define X_MM_HOMING_OFFSET (3) // MM - how many milimeters to move after I touch the limit switch
+#define Y_MM_HOMING_OFFSET (3) // MM - how many milimeters to move after I touch the limit switch
 
 // SYSTEM MODES
 /* MOVEMENT_MODE determines
@@ -54,7 +54,7 @@
   - TEST - all elements are pushed farwrd
   - TEST_NEG - same as test, but to the other direction
 */
-#define MOVEMENT_MODE RANDOM 
+#define MOVEMENT_MODE RANDOM
 
 #define VALIDATE_MOVEMENT 1 // 1 or 0 - if set to 1, after MAX_ELEMENTS_SEQ consequtive elements, the system will move the next element to the opposite direction. 
 #define OPERATION_MODE EXHIBITION // can be set to EXHIBITION or   PRESENTATION
@@ -67,7 +67,7 @@
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 1 ) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 10000  ) //milli * seconds
 #define COOLING_TIME (120) //seconds
 #define CALIBRATION_RATE (50) // elements
 
