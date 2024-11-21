@@ -38,9 +38,26 @@ void auto_homing(StepperController *stepper_c, int *current_element_index)
   stepper_c->set_enable(true);
   Serial.println("~~Turn motors on.~~");
 
-  // Move X to 0    
+  // Move Y to 0    
 
-  stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), 0);  
+  stepper_c->set_steps_count(0, mm_to_steps((Y_MM_RAIL_LENGTH), Y_STEPS_PER_MM));  
+  while (stepper_c->get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN))
+  {
+      stepper_c->move_step(2, 2); // move backwards
+  }
+  stepper_c->set_steps_count(0, 0);  
+  
+  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET + Y_CENTER_MM, Y_STEPS_PER_MM))
+  {
+      stepper_c->move_step(2, 0);
+  }
+  stepper_c->set_steps_count(0, mm_to_steps( Y_CENTER_MM, Y_STEPS_PER_MM));
+  Serial.println("Moved Y axis to place.");
+  print_current_position();
+
+
+  // Move X to 0    
+  stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), mm_to_steps( Y_CENTER_MM, Y_STEPS_PER_MM));  
   
   Serial.println("------");
   // print_current_position();
@@ -64,18 +81,7 @@ void auto_homing(StepperController *stepper_c, int *current_element_index)
   Serial.println("Moved X axis to place!");
 
   
-  stepper_c->set_steps_count(0, mm_to_steps((Y_MM_RAIL_LENGTH), Y_STEPS_PER_MM));  
-  while (stepper_c->get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN))
-  {
-      stepper_c->move_step(2, 2); // move backwards
-  }
-  
-  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET, Y_STEPS_PER_MM))
-  {
-      stepper_c->move_step(2, 0);
-  }
-  stepper_c->set_steps_count(0, 0);
-  Serial.println("Moved Y axis to place.");
+
   
   stepper_c->set_steps_rate(STEPS_RATE);
   Serial.println("Auto homing completed successfully! ");

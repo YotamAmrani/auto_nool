@@ -54,7 +54,7 @@
   - TEST - all elements are pushed farwrd
   - TEST_NEG - same as test, but to the other direction
 */
-#define MOVEMENT_MODE RANDOM 
+#define MOVEMENT_MODE TEST 
 
 #define VALIDATE_MOVEMENT 1 // 1 or 0 - if set to 1, after MAX_ELEMENTS_SEQ consequtive elements, the system will move the next element to the opposite direction. 
 #define OPERATION_MODE EXHIBITION // can be set to EXHIBITION or   PRESENTATION
@@ -67,8 +67,8 @@
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000* 1 ) //milli * seconds
-#define COOLING_TIME (120) //seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 300 ) //milli * seconds
+#define COOLING_TIME (60) //seconds
 #define CALIBRATION_RATE (50) // elements
 
 // AUTO PRINTING
