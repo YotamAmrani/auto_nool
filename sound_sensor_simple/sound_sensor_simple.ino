@@ -18,13 +18,15 @@ void loop()
 {
   // Read the sound sensor value
   micValue = digitalRead(micPin);
+  // micValue = analogRead(micPin);
   
   // Check if the sound sensor has detected noise
-  // if (micValue > 40)
-  // {
+  if (micValue)
+  {
     // ledState = digitalRead(ledPin); // Retrieves the current LED state
     // digitalWrite(ledPin, !ledState); // Toggles the LED state
-    Serial.println(micValue);
-    delay(100); // Pauses for 0.5 seconds
-  // }
+      Serial.println("yo");
+  }
+      // Serial.println(micValue);
+    delay(10); // Pauses for 0.5 seconds
 }

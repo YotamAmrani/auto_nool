@@ -1,10 +1,11 @@
-
+#include <TFT_eSPI.h> // Hardware-specific library
+#include <SPI.h>
+#include <WiFi.h>
+#include "time.h"
+#include <TFT_eSPI.h> // For TTGO T4 display
 #define BLACK 0x0000
 #define WHITE 0xFFFF
 #define GREY  0x5AEB
-
-#include <TFT_eSPI.h> // Hardware-specific library
-#include <SPI.h>
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
@@ -13,6 +14,10 @@ int16_t w = 320;
 int dly = 5;
 bool is_black = true;
 int factor = 10;
+
+int micPin = 19;
+int micValue;
+
 constexpr int BARS_COUNT = 80; // w/4
 int fr_bars[BARS_COUNT] = {0};
 int current_bars[BARS_COUNT] = {0};
@@ -21,10 +26,20 @@ int GAUSS_WIDTH = 3;
 int GAUSS_DECREASE = 8;
 int MAX_BAR = 70;
 
+// WIFI settings
+const char* ssid = "YotamZoey";
+const char* password = "0545415851";
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 7200;         // UTC+2 for Israel Standard Time
+const int daylightOffset_sec = 3600;     // Add 1 hour for daylight saving time
+struct tm timeinfo;
+struct tm current_timeinfo;
+
 
 void draw_lines(int factor){
     if (factor == 0){
-      tft.fillScreen(BLACK);
+      // tft.fillScreen(BLACK);
+      tft.fillRect(0,21,w,h-21,BLACK);
       tft.fillRect(0,h/2,w,1,GREY);
     }
     for(int i=0; i< w; i++){
@@ -69,7 +84,8 @@ void random_bucket_selection(){
 
 void dim_bucket(){
   for (int j = 0; j< 3; j++){
-    tft.fillScreen(BLACK);
+    // tft.fillScreen(BLACK);
+    tft.fillRect(0,41,w,h-41,BLACK);
     tft.fillRect(0,h/2,w,1,GREY);
     
     for(int i=0; i< BARS_COUNT; i++ ){
@@ -90,13 +106,59 @@ void clear_buckets(){
   }
 }
 
+
+void setup_wifi(){
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to Wi-Fi...");
+  }
+
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextSize(2);
+}
+
+void display_time(){
+  if (getLocalTime(&current_timeinfo)) {
+    if(current_timeinfo.tm_hour != timeinfo.tm_hour || current_timeinfo.tm_min != timeinfo.tm_min){
+      getLocalTime(&timeinfo);
+      char timeStr[16];
+      strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+      tft.fillRect(0,0,w,41,BLACK);
+      tft.fillRect(0,h/2,w,1,GREY);
+      tft.setCursor(180, 20); // Adjust coordinates as needed
+      tft.print("Time: ");
+      tft.println(timeStr);
+    }
+
+  } else {
+    Serial.println("Failed to obtain time");
+  }
+}
+
 void setup() {
   Serial.begin(115200);
+  pinMode(micPin, INPUT); // Configures the sound sensor pin as input
   randomSeed(esp_random()); // Seed the random generator with ESP32's hardware RNG
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(BLACK);
   tft.fillRect(0,h/2,w,1,GREY);
+  setup_wifi();
+}
+
+void draw_bars(){
+    for (int j =0; j< BARS_COUNT ; j++){
+    // Serial.print(fr_bars[j]);
+    // Serial.print(", ");
+    tft.fillRect(j*4,h/2 - (fr_bars[j])/2,2,fr_bars[j],WHITE);
+
+  }
+  Serial.println();
+  dim_bucket();
 }
 
 void loop() {
@@ -105,24 +167,20 @@ void loop() {
 
   // factor = (factor + 1)%10;
   // draw_lines(factor);
-  random_bucket_selection();
-  bucket_filler();
+  micValue = digitalRead(micPin);
+  if (micValue)
+  {
+    random_bucket_selection();
+    bucket_filler();
+    draw_bars();
+    // display_time();
 
-  for (int j =0; j< BARS_COUNT ; j++){
-    Serial.print(fr_bars[j]);
-    Serial.print(", ");
-    tft.fillRect(j*4,h/2 - (fr_bars[j])/2,2,fr_bars[j],WHITE);
-
+    // delay(300);
+    clear_buckets();
+    tft.fillRect(0,41,w,h-41,BLACK);
+    tft.fillRect(0,h/2,w,1,GREY);
   }
-  Serial.println();
-  dim_bucket();
-
-
-
-  // delay(300);
-  clear_buckets();
-  tft.fillScreen(BLACK);
-  tft.fillRect(0,h/2,w,1,GREY);
-
-
+  else {
+    display_time();
+  }
 }
