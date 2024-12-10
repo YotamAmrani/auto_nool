@@ -345,7 +345,7 @@ void loop()
     //   delay((unsigned long)1000 * 10);
     // }
 
-      // stepper_c.set_enable(true);
+      stepper_c.set_enable(true); // temp
       move_to_next(&stepper_c, current_element_index); // get skipped on element 0 and last element
       // print_current_position();
       move_element(&stepper_c, y_direction);
@@ -356,7 +356,8 @@ void loop()
         state.sys_mode = LISTEN;
         state.last_move_time_stamp = micros();
       }
-    // stepper_c.set_enable(false);
+      delay(100); //temp
+    stepper_c.set_enable(false); //temp
     break;
   case IDLE:
       if (is_pressed(BUTTON_PIN) || state.op_mode == EXHIBITION){
@@ -373,6 +374,8 @@ void loop()
         // stepper_c.set_enable(true);
         tune_rate = 0;
         auto_homing(&stepper_c, &current_element_index);
+        Serial.print("Running mode: ");
+        Serial.println(state.move_mode);
         cross_state = cross_state ? 0:1;
         
         

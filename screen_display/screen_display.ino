@@ -7,6 +7,9 @@
 #define WHITE 0xFFFF
 #define GREY  0x5AEB
 
+#define WIFI_TIMEOUT  10 //seconds
+bool WIFI_IS_CONNECTED = false;
+
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 int16_t h = 240;
@@ -73,11 +76,17 @@ void bucket_filler(){
 
 void random_bucket_selection(){
   for(int i=0; i< BARS_COUNT; i++ ){
-    fr_bars[i] =  random(0, MAX_BAR + 1);
-    if (fr_bars[i] > 0 && i + GAP < BARS_COUNT -1 ){
-      current_bars[i] = 1;
-      i += GAP;
+    if( (i > 10 && i < 40) || (i >60 && i < 75 )   ){
+      fr_bars[i] =  random(MAX_BAR/2, MAX_BAR + 1);
     }
+    else{
+      fr_bars[i] =  random(0, MAX_BAR/2 + 1);
+    }
+      if (fr_bars[i] > 0 && i + GAP < BARS_COUNT -1 ){
+        current_bars[i] = 1;
+        i += GAP;
+      }
+    
   }
 }
 
@@ -147,7 +156,7 @@ void setup() {
   tft.setRotation(1);
   tft.fillScreen(BLACK);
   tft.fillRect(0,h/2,w,1,GREY);
-  setup_wifi();
+  // setup_wifi();
 }
 
 void draw_bars(){
@@ -173,14 +182,13 @@ void loop() {
     random_bucket_selection();
     bucket_filler();
     draw_bars();
-    // display_time();
 
     // delay(300);
     clear_buckets();
     tft.fillRect(0,41,w,h-41,BLACK);
     tft.fillRect(0,h/2,w,1,GREY);
   }
-  else {
+  else if(WIFI_IS_CONNECTED) {
     display_time();
   }
 }

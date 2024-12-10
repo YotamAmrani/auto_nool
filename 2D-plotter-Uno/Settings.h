@@ -67,7 +67,7 @@
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 10000  ) //milli * seconds
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 *  1000 * 120  ) //milli * seconds
 #define COOLING_TIME (120) //seconds
 #define CALIBRATION_RATE (50) // elements
 
