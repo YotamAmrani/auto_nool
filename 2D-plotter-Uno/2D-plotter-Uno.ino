@@ -106,6 +106,7 @@ void auto_homing(StepperController *stepper_c, int *current_element_index)
   }
 
   *current_element_index = 0;
+  stepper_c->set_enable(false); // temp
   Serial.println("Moved to Element 0");
   Serial.println("-------------------------");
 

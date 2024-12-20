@@ -177,6 +177,7 @@ void loop() {
   // factor = (factor + 1)%10;
   // draw_lines(factor);
   micValue = digitalRead(micPin);
+  Serial.println(micValue);
   if (micValue)
   {
     random_bucket_selection();
