@@ -1,393 +1,177 @@
 #include <Arduino.h>
-#include "StepperController.h"
 #include "Settings.h"
-#include "element_movement.h"
+#include "StepperController.h"
 
+// ====== מצב בדיקה ======
+static const unsigned long MOVE_INTERVAL_MS = 6000; // 6 שניות בין אלמנטים
+static const int TEST_Y_DIRECTION = 1;              // "קדימה" ב-Y (אם יוצא הפוך תשני ל- -1)
+// =======================
 
-sys_state state = {IDLE, MOVEMENT_MODE, OPERATION_MODE , micros()};
+StepperController stepper_c;
 
-
-
-StepperController stepper_c = StepperController();
-
-// ELEMENTS STATE
-int ELEMENT_MOVES[ELEMENTS_COUNT] = {0};
 int current_element_index = 0;
 unsigned long tune_rate = 0;
-int x_direction = 1;
-int y_direction = 1;
-unsigned int finished_rows = 0;
-int cross_state = 1;
-int random_val_was_chosen = false;
-int mic_value = digitalRead(SOUND_SENSOR_PIN);
+unsigned long last_move_ms = 0;
 
-
-void print_current_position()
-{
-    Serial.println("Position: ");
-    Serial.print(stepper_c.get_steps_count()[X_AXIS]);
-    Serial.print(",");
-    Serial.println(stepper_c.get_steps_count()[Y_AXIS]);
+// --- דיבוג אופציונלי ---
+static void print_xy() {
+  Serial.print("Xsteps=");
+  Serial.print(stepper_c.get_steps_count()[X_AXIS]);
+  Serial.print("  Ysteps=");
+  Serial.println(stepper_c.get_steps_count()[Y_AXIS]);
 }
 
-void move_x_to_zero(StepperController *stepper_c){
-  // Move X to 0    
-  stepper_c->set_steps_count(mm_to_steps((X_MM_RAIL_LENGTH), X_STEPS_PER_MM), mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM));  
-  
-  Serial.println("------");
-  // print_current_position();
+// Move X to 0 (limit) then offset
+static void move_x_to_zero() {
+  // מתחילים "כאילו" בקצה כדי לוודא שנגיע ללימיט
+  stepper_c.set_steps_count(mm_to_steps(X_MM_RAIL_LENGTH, X_STEPS_PER_MM),
+                            mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM));
 
-  while ( digitalRead(X_LIMIT_SW_PIN) && stepper_c->get_steps_count()[X_AXIS] > 0 ) 
-  {
-      stepper_c->move_step(1, 1); // move backwards
-      unsigned long bla = stepper_c->get_steps_count()[X_AXIS];
-      if(bla % 7900 == 0){
-        Serial.println(bla);
-      }
+  // זוז אחורה עד הלימיט
+  while (digitalRead(X_LIMIT_SW_PIN) && stepper_c.get_steps_count()[X_AXIS] > 0) {
+    stepper_c.move_step(1, 1); // X שלילי
   }
-  
-  stepper_c->set_steps_count(0, mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM));  
-  while (stepper_c->get_steps_count()[X_AXIS] < mm_to_steps(X_MM_HOMING_OFFSET, X_STEPS_PER_MM))
-  {
-      stepper_c->move_step(1, 0);
+
+  // קובעים X=0 בנגיעה
+  stepper_c.set_steps_count(0, stepper_c.get_steps_count()[Y_AXIS]);
+
+  // זזים קדימה X_MM_HOMING_OFFSET
+  while (stepper_c.get_steps_count()[X_AXIS] < mm_to_steps(X_MM_HOMING_OFFSET, X_STEPS_PER_MM)) {
+    stepper_c.move_step(1, 0); // X חיובי
   }
-  stepper_c->set_steps_count(0, mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM));  
-  
-  Serial.println("Moved X axis to place!");
 
-
+  // מאפסים שוב (כמו אצלך)
+  stepper_c.set_steps_count(0, stepper_c.get_steps_count()[Y_AXIS]);
 }
 
-void move_y_to_center(StepperController *stepper_c){
-  stepper_c->set_steps_count(0, mm_to_steps((Y_MM_RAIL_LENGTH), Y_STEPS_PER_MM));  
-  Serial.println("------");
-  while (stepper_c->get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN))
-  {
-      stepper_c->move_step(2, 2); // move backwards
-  }
-  
-  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET, Y_STEPS_PER_MM))
-  {
-      stepper_c->move_step(2, 0);
-  }
-  stepper_c->set_steps_count(0, 0);
-  Serial.println("Moved Y axis to zero.");
+// Move Y to 0 (limit) then to center
+static void move_y_to_center() {
+  stepper_c.set_steps_count(stepper_c.get_steps_count()[X_AXIS],
+                            mm_to_steps(Y_MM_RAIL_LENGTH, Y_STEPS_PER_MM));
 
-    // move to the center of Y axis 
-  while ( stepper_c->get_steps_count()[Y_AXIS] < mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
-  {
-      stepper_c->move_step(2, 0);
-  }
-  Serial.println("Moved Y to center");
-}
-
-
-void auto_homing(StepperController *stepper_c, int *current_element_index)
-{
-  Serial.println("Auto homing! ");
-  stepper_c->set_steps_rate(AUTO_HOME_STEPS_RATE);
-  stepper_c->set_enable(true);
-  Serial.println("~~Turn motors on.~~");
-
-  // Move Y to zero position 
-  move_y_to_center(stepper_c);
-  move_x_to_zero(stepper_c);
-
-  stepper_c->set_steps_rate(STEPS_RATE);
-  Serial.println("Auto homing completed successfully! ");
-  print_current_position();  
-  
-
-
-  // move to The first element 
-  while ( stepper_c->get_steps_count()[X_AXIS] < mm_to_steps(X_OFFSET_MM, X_STEPS_PER_MM))
-  {
-      stepper_c->move_step(1, 0);
+  // זוז אחורה עד הלימיט
+  while (stepper_c.get_steps_count()[Y_AXIS] > 0 && digitalRead(Y_LIMIT_SW_PIN)) {
+    stepper_c.move_step(2, 2); // Y שלילי
   }
 
-  *current_element_index = 0;
-  stepper_c->set_enable(false); // temp
-  Serial.println("Moved to Element 0");
-  Serial.println("-------------------------");
-
-}
-
-
-void update_next(int* current_element_index, int* x_direction){
-  if ((*current_element_index == ELEMENTS_COUNT-1 && *x_direction > 0)){
-    // case it is the last element - enter IDLE state
-    state.sys_mode = IDLE;
-    stepper_c.set_enable(false);
-    Serial.println("-------------------------");
-    Serial.println("~~Turn motors off.~~");
-    Serial.println("Enter IDLE mode");
+  // יוצאים מהסוויץ' Y_MM_HOMING_OFFSET
+  while (stepper_c.get_steps_count()[Y_AXIS] < mm_to_steps(Y_MM_HOMING_OFFSET, Y_STEPS_PER_MM)) {
+    stepper_c.move_step(2, 0); // Y חיובי
   }
-  else{
-    *current_element_index += *x_direction;
+
+  // אפס Y
+  stepper_c.set_steps_count(stepper_c.get_steps_count()[X_AXIS], 0);
+
+  // זוז למרכז
+  while (stepper_c.get_steps_count()[Y_AXIS] < mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM)) {
+    stepper_c.move_step(2, 0); // Y חיובי
   }
 }
 
+// Auto homing ואז מעבר לאלמנט הראשון
+static void auto_homing_and_goto_first() {
+  Serial.println("Auto homing...");
+  stepper_c.set_steps_rate(AUTO_HOME_STEPS_RATE);
+  stepper_c.set_enable(true);
 
-void move_to_next(StepperController *stepper_c, int current_element_index){
-  // Move X to the next element
-  int direction_mask = 0;
+  move_y_to_center();
+  move_x_to_zero();
 
-  if (current_element_index % CALIBRATION_RATE == 0 && current_element_index != 0){
-    // steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM) - X_STEPS_PER_MM;
+  // חזרה למהירות עבודה
+  stepper_c.set_steps_rate(STEPS_RATE);
+
+  // מעבר לאלמנט הראשון (X_OFFSET_MM)
+  while (stepper_c.get_steps_count()[X_AXIS] < mm_to_steps(X_OFFSET_MM, X_STEPS_PER_MM)) {
+    stepper_c.move_step(1, 0);
+  }
+
+  current_element_index = 0;
+  tune_rate = 0;
+  Serial.println("Homing done. At element 0.");
+  print_xy();
+
+  last_move_ms = millis();
+}
+
+// Move X to target element (כולל פיצוי כל 50 אלמנטים כמו אצלך)
+static void move_to_element_x(int element_idx) {
+  // פיצוי כל CALIBRATION_RATE
+  if (element_idx % CALIBRATION_RATE == 0 && element_idx != 0) {
     tune_rate += X_STEPS_PER_MM;
   }
-  unsigned long steps_to_move = mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * current_element_index)), X_STEPS_PER_MM);
-  
-  while ( stepper_c->get_steps_count()[X_AXIS] != steps_to_move-tune_rate) 
-  {
-    stepper_c->move_step(1, direction_mask);
+
+  unsigned long target_steps =
+      mm_to_steps((X_OFFSET_MM + (X_ELEMNT_SPACING_MM * element_idx)), X_STEPS_PER_MM);
+
+  // כיוון חיובי (0) כי אנחנו רק קדימה בבדיקה
+  while (stepper_c.get_steps_count()[X_AXIS] != (target_steps - tune_rate)) {
+    stepper_c.move_step(1, 0);
   }
-  
-  Serial.print("--moved to element: ");
-  Serial.println(current_element_index);
 }
 
-
-void move_element(StepperController *stepper_c, int y_direction){
-  // assuming element is at the Y center coordinate, x on the next element
-  // Move Y to desired direction 
+// Push element in Y and return to center (כמו בקוד שלך)
+static void push_element_y(int y_direction) {
   int direction_mask = 0;
-  if(y_direction < 0){
-    direction_mask = 2;
+  if (y_direction < 0) direction_mask = 2; // Y שלילי
+
+  unsigned long target =
+      mm_to_steps((Y_CENTER_MM + (y_direction * Y_RADIUS_MM)), Y_STEPS_PER_MM);
+
+  while (stepper_c.get_steps_count()[Y_AXIS] != target) {
+    stepper_c.move_step(2, direction_mask);
   }
-  while ( stepper_c->get_steps_count()[Y_AXIS] != mm_to_steps((Y_CENTER_MM + (y_direction*Y_RADIUS_MM)), Y_STEPS_PER_MM))
-  {
-    stepper_c->move_step(2, direction_mask);
-  }
-  Serial.print("--Pushed element: ");
-  Serial.print(current_element_index);
-  Serial.print(" to dir: ");
-  Serial.println(y_direction);
-  
-  while ( stepper_c->get_steps_count()[Y_AXIS] != mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM))
-  {
-    stepper_c->move_step(2, (2-direction_mask));
-  }
-  Serial.println("--moved Y to center");
-  
-}
 
-
-void move_to_first_element(StepperController *stepper_c, int* current_element_index){
-  int direction_mask = 1;
-  stepper_c->set_enable(true);
-  while ( digitalRead(X_LIMIT_SW_PIN) && stepper_c->get_steps_count()[X_AXIS] != mm_to_steps((X_OFFSET_MM), X_STEPS_PER_MM)) 
-  {
-    stepper_c->move_step(1, direction_mask);
-  }
-  Serial.println("--moved to first element");
-  *current_element_index = 0;
-}
-
-
-void print_elements_move(int ELEMENT_MOVES[ELEMENTS_COUNT]){
-  Serial.println("Elements moves:");
-  for(int i = 0; i< ELEMENTS_COUNT; i++ ){
-    Serial.print(i);
-    Serial.print(":");
-    Serial.print(ELEMENT_MOVES[i]);
-    Serial.print(", ");
-  }
-  Serial.println();
-
-}
-
-
-bool is_pressed(int button_pin){
-  bool is_pressed = false;
-  if (!digitalRead(button_pin)){
-    is_pressed = true;
-    delay(100);
-    if (is_pressed && !digitalRead(button_pin)){
-      Serial.println("Pressed!");
-      return true;
-    }
-  }
-  return false;
-}
-
-
-bool is_movement_valid(int ELEMENT_MOVES[ELEMENTS_COUNT], int current_element_index, int value){
-  bool result = true;
-  if (current_element_index >= MAX_ELEMENTS_SEQ){
-    int sum = 0;
-    for(int i = current_element_index-1; i >= current_element_index - MAX_ELEMENTS_SEQ ;  i-- ){
-      sum += ELEMENT_MOVES[i] == value;
-    }
-    result =  !(sum == MAX_ELEMENTS_SEQ);
-  }
-  
-  return result;
-}
-
-
-void random_direction(int current_element_index, int* y_direction){
-  int random_val = random(2);
-  if(!random_val_was_chosen){
-    *y_direction = (random_val > 0) - (random_val == 0);
-  }
-  
-  random_val_was_chosen = true;
-
-}
-
-
-void cross_direction(int current_element_index, int* y_direction){ 
-  // Serial.println("CROSS");
-  if(current_element_index %2 == cross_state ){
-    *y_direction = 1;
-  }
-  else{
-    *y_direction = -1;
-  }
-  // Serial.println("CROSS");
-}
-
-
-void test_direction(int current_element_index, int* y_direction){ 
-  *y_direction = 1;
-}
-
-
-void test_negative_direction(int current_element_index, int* y_direction){ 
-  *y_direction = -1;
-}
-
-
-void detect_direction(int current_element_index,int* y_direction, int *mic_value){
-  // Serial.print("Max val: ");
-  // Serial.println(*micValue);
-
-  int current_val = (digitalRead(SOUND_SENSOR_PIN));
-  *mic_value =  (current_val > *mic_value) ? current_val: *mic_value;
-  *y_direction = (*mic_value > 0) - (*mic_value == 0);
-
-}
-
-
-void configure_y_direction(int ELEMENT_MOVES[ELEMENTS_COUNT], int current_element_index, int* y_direction, int *micValue){
-  switch (state.move_mode)
-  {
-    case TEST:
-      test_direction(current_element_index, y_direction);
-      break;
-    case TEST_NEG:
-      test_negative_direction(current_element_index, y_direction);
-      break;
-    case CROSS:
-      cross_direction(current_element_index, y_direction);
-      break;
-    case RANDOM:
-      random_direction(current_element_index, y_direction);
-      break;
-    case SOUND:
-      detect_direction(current_element_index, y_direction, micValue);
-      break;
+  // חזרה למרכז
+  unsigned long center = mm_to_steps(Y_CENTER_MM, Y_STEPS_PER_MM);
+  while (stepper_c.get_steps_count()[Y_AXIS] != center) {
+    stepper_c.move_step(2, (2 - direction_mask));
   }
 }
 
-
-void correct_y_seq(int ELEMENT_MOVES[ELEMENTS_COUNT], int current_element_index, int* y_direction){
-  // update the next value
-  ELEMENT_MOVES[current_element_index] = *y_direction;
-  if(!is_movement_valid(ELEMENT_MOVES, current_element_index, *y_direction)){
-    // flip direction
-    *y_direction = *y_direction == 1 ? -1:1;
-    ELEMENT_MOVES[current_element_index] = *y_direction;
-  }
-}
-
-void setup()
-{
-
+void setup() {
   Serial.begin(115200);
-  randomSeed(analogRead(0));
 
-  /** INIT PINS **/
   pinMode(X_LIMIT_SW_PIN, INPUT_PULLUP);
   pinMode(Y_LIMIT_SW_PIN, INPUT_PULLUP);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(SOUND_SENSOR_PIN, INPUT);
-  
-  Serial.println("Entered Idle mode");
-  state.sys_mode = IDLE;
-  state.last_move_time_stamp = micros();
 
+  stepper_c.set_steps_rate(STEPS_RATE);
+  stepper_c.set_enable(true);
+
+  delay(300);
+  auto_homing_and_goto_first();
 }
 
-void loop()
-{
-  
-  switch (state.sys_mode)
-  {
-  case LISTEN:
-     if((micros() - state.last_move_time_stamp) > (PENDING_TIME_BETWEEN_ELEMENTS)){
-        Serial.println("Enter PRINT mode");
-        state.sys_mode = PRINT;
-        // update current movement
-        #ifdef VALIDATE_MOVEMENT
-        correct_y_seq(ELEMENT_MOVES, current_element_index, &y_direction);
-        #endif
-        random_val_was_chosen = false;
-        mic_value = 0;
-         
-      }
-      else {
-        configure_y_direction(ELEMENT_MOVES, current_element_index, &y_direction, &mic_value);
-      }
-    break;
-  case PRINT:      
-    // if (current_element_index % 15 == 0 && current_element_index != 0){
-    //   delay((unsigned long)1000 * 10);
-    // }
+void loop() {
+  unsigned long now = millis();
 
-      stepper_c.set_enable(true); // temp
-      move_to_next(&stepper_c, current_element_index); // get skipped on element 0 and last element
-      // print_current_position();
-      move_element(&stepper_c, y_direction);
-      update_next(&current_element_index, &x_direction);
-      // print_current_position();
-      if (state.sys_mode == PRINT){
-        Serial.println("Enter LISTEN mode");
-        state.sys_mode = LISTEN;
-        state.last_move_time_stamp = micros();
-      }
-      delay(100); //temp
-    stepper_c.set_enable(false); //temp
-    break;
-  case IDLE:
-      if (is_pressed(BUTTON_PIN) || state.op_mode == EXHIBITION){
-        // cool off engines when row is done
-        if (state.op_mode == EXHIBITION && finished_rows){
-          Serial.print("Pending for: ");
-          Serial.print(COOLING_TIME);
-          Serial.println(" seconds.");
-          delay((unsigned long)1000 * COOLING_TIME);
-        }
-        finished_rows++;
-        
-        print_elements_move(ELEMENT_MOVES);
-        // stepper_c.set_enable(true);
-        tune_rate = 0;
-        auto_homing(&stepper_c, &current_element_index);
-        Serial.print("Running mode: ");
-        Serial.println(state.move_mode);
-        cross_state = cross_state ? 0:1;
-        
-        
-        // Enter listen mode
-        Serial.println("Enter LISTEN mode");
-        state.sys_mode = LISTEN;
-        state.last_move_time_stamp = micros();
-      }
-      break;
-  default:
-      break;
+  // כל 6 שניות: זז לאלמנט הבא + דוחף ב-Y
+  if (now - last_move_ms >= MOVE_INTERVAL_MS) {
+    // אם הגענו לסוף — לעצור
+    if (current_element_index >= (ELEMENTS_COUNT - 1)) {
+      Serial.println("Reached last element. Motors OFF.");
+      stepper_c.set_enable(false);
+      while (true) { delay(1000); }
+    }
+
+    current_element_index++;
+
+    stepper_c.set_enable(true);
+
+    // זז ל-X של האלמנט
+    move_to_element_x(current_element_index);
+
+    // דוחף את האלמנט ב-Y וחוזר למרכז
+    push_element_y(TEST_Y_DIRECTION);
+
+    Serial.print("IDX=");
+    Serial.print(current_element_index);
+    Serial.print("  tune_rate=");
+    Serial.println(tune_rate);
+
+    stepper_c.set_enable(false);
+
+    last_move_ms = now;
   }
- 
 }

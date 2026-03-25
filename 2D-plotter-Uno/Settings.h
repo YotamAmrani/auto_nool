@@ -24,7 +24,7 @@
 #define Y_LIMIT_SW_PIN 10
 #define BUTTON_PIN 11
 
-// STEPERS CONFIGURATIONS
+// SOUND SENSOR
 #define SOUND_SENSOR_PIN 12
 
 
@@ -35,9 +35,8 @@
 #define Y_STEPS_PER_MM (10)
 
 
-
 // SOFT LIMITS SETTINGS
-#define ENABLE_SOFT_LIMIT 1 // uncomment to disable soft limits
+#define ENABLE_SOFT_LIMIT 1 // if defined -> soft limits ON
 #define AUTO_HOME_STEPS_RATE 700 //the bigger the slower
 
 #define X_MM_RAIL_LENGTH  1060 // MM - do not touch
@@ -46,18 +45,12 @@
 #define X_MM_HOMING_OFFSET (3) // MM - how many milimeters to move after I touch the limit switch
 #define Y_MM_HOMING_OFFSET (3) // MM - how many milimeters to move after I touch the limit switch
 
-// SYSTEM MODES
-/* MOVEMENT_MODE determines
-  how the system elemnts will be pushed.
-  - CROSS - shti va erev 
-  - RANDOM - random
-  - TEST - all elements are pushed farwrd
-  - TEST_NEG - same as test, but to the other direction
-*/
+
+// SYSTEM MODES (כמו בתערוכה)
 #define MOVEMENT_MODE RANDOM
 
-#define VALIDATE_MOVEMENT 1 // 1 or 0 - if set to 1, after MAX_ELEMENTS_SEQ consequtive elements, the system will move the next element to the opposite direction. 
-#define OPERATION_MODE EXHIBITION // can be set to EXHIBITION or   PRESENTATION
+#define VALIDATE_MOVEMENT 1 // 1 or 0
+#define OPERATION_MODE EXHIBITION // EXHIBITION or PRESENTATION
 
 
 // NOOL ELEMENTS
@@ -67,13 +60,17 @@
 #define X_ELEMNT_SPACING_MM (4)
 #define Y_CENTER_MM (75)
 #define Y_RADIUS_MM (75)
-#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 *  1000 * 120  ) //milli * seconds
+
+// ✅ מהירות בדיקה: 4 שניות בין אלמנט לאלמנט
+// (מיקרו-שניות) = 1000*1000*4
+#define PENDING_TIME_BETWEEN_ELEMENTS ((unsigned long)1000 * 1000 * 4)
+
 #define COOLING_TIME (120) //seconds
 #define CALIBRATION_RATE (50) // elements
 
+
 // AUTO PRINTING
 #define steps_to_mm(steps, ratio) (steps / ratio)
-//#define mm_to_steps(mm, ratio) ((unsigned long)mm * ratio)
 #define mm_to_steps(mm, ratio) ((unsigned long)(mm) * (ratio) + ((unsigned long)((mm - (unsigned long)(mm)) * (ratio))))
 
 
@@ -113,6 +110,5 @@ struct sys_state
   Operation_mode op_mode;
   long unsigned last_move_time_stamp;
 };
-
 
 #endif
